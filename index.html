@@ -7,47 +7,67 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
+            margin: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #fff0f3;
-            text-align: center;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden; /* Prevents scrollbars when button jumps */
         }
         #container {
-            padding: 20px;
+            text-align: center;
+            z-index: 10;
+            width: 90%;
         }
-        h1 { color: #ff4d6d; font-size: 2.5rem; }
-        .buttons {
+        h1 { color: #ff4d6d; margin-bottom: 30px; font-size: 2rem; }
+        
+        /* The container for the Yes button keeps it from overlapping H1 */
+        #yesContainer {
+            height: 150px; 
             display: flex;
-            gap: 20px;
             align-items: center;
             justify-content: center;
-            margin-top: 30px;
+            margin-bottom: 20px;
         }
+
         button {
             padding: 15px 25px;
             font-size: 1.2rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: transform 0.2s ease-in-out;
+            touch-action: manipulation; /* Improves mobile response */
         }
-        #yesBtn { background-color: #ff4d6d; color: white; }
-        #noBtn { background-color: #ffb3c1; color: #590d22; }
+
+        #yesBtn {
+            background-color: #ff4d6d;
+            color: white;
+            z-index: 20;
+            max-width: 90vw; /* Keeps it within screen width */
+        }
+
+        #noBtn {
+            background-color: #ffb3c1;
+            color: #590d22;
+            position: absolute; /* Allows it to jump around */
+            z-index: 30;
+        }
     </style>
 </head>
 <body>
 
     <div id="container">
         <h1 id="question">Will you be my Valentine? ❤️</h1>
-        <div class="buttons">
+        
+        <div id="yesContainer">
             <button id="yesBtn">Yes</button>
-            <button id="noBtn">No</button>
         </div>
+
+        <button id="noBtn">No</button>
     </div>
 
     <script>
@@ -55,38 +75,45 @@
         const noBtn = document.getElementById('noBtn');
         const question = document.getElementById('question');
         
-        let yesSize = 1.2;
+        let yesScale = 1;
         let noClicks = 0;
+
         const messages = [
-            "Are you sure?",
-            "Think again!",
-            "Pleeaaase?",
-            "I'll buy you snacks!",
-            "You're clicking the wrong one!",
-            "Look how big the Yes button is!"
+            "Wait, what?", "Are you sure?", "Think again!", 
+            "I'll be sad...", "Very sad...", "Extremely sad...", 
+            "Okay, now you're just being mean!", "Click the big one!"
         ];
 
         noBtn.addEventListener('click', () => {
             noClicks++;
-            // Grow Yes Button
-            yesSize += 0.5;
-            yesBtn.style.transform = `scale(${yesSize})`;
             
-            // Shrink No Button
-            let noScale = Math.max(0.4, 1 - (noClicks * 0.1));
-            noBtn.style.transform = `scale(${noScale})`;
-
-            // Change Text
-            if(noClicks < messages.length) {
-                noBtn.innerText = messages[noClicks];
+            // 1. Grow Yes Button (Max scale to prevent screen break)
+            if (yesScale < 5) {
+                yesScale += 0.4;
+                yesBtn.style.transform = `scale(${yesScale})`;
             }
+
+            // 2. Change No Button text
+            noBtn.innerText = messages[noClicks % messages.length];
+
+            // 3. Move No Button to a random position
+            // We subtract button width/height to keep it mostly on screen
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+            
+            noBtn.style.left = `${x}px`;
+            noBtn.style.top = `${y}px`;
         });
 
         yesBtn.addEventListener('click', () => {
+            // Hide the No button when she finally says yes
+            noBtn.style.display = 'none';
+            
             document.getElementById('container').innerHTML = `
-                <h1 style="font-size: 3rem;">YAY! See you on the 14th! 🥰</h1>
-                <p>I knew you couldn't resist the big button.</p>
+                <h1 style="font-size: 2.5rem;">YAY! 🥰<br>See you on the 14th!</h1>
+                <p>Prepare for the best date ever.</p>
             `;
+            
             confetti({
                 particleCount: 150,
                 spread: 70,
