@@ -12,106 +12,115 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Keeps content top-aligned to avoid overlaps */
             background-color: #fff0f3;
             font-family: 'Arial', sans-serif;
-            overflow: hidden; /* Prevents scrollbars when button jumps */
+            overflow: hidden;
+            padding-top: 20vh; /* Gives the question breathing room */
         }
-        #container {
-            text-align: center;
-            z-index: 10;
-            width: 90%;
+
+        #question-container {
+            height: 100px; /* Locked height so text never moves */
+            margin-bottom: 20px;
+            z-index: 100;
         }
-        h1 { color: #ff4d6d; margin-bottom: 30px; font-size: 2rem; }
-        
-        /* The container for the Yes button keeps it from overlapping H1 */
-        #yesContainer {
-            height: 150px; 
+
+        h1 { color: #ff4d6d; font-size: 1.8rem; margin: 0; }
+
+        .button-group {
             display: flex;
+            gap: 20px;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            height: 200px; /* Space for the Yes button to grow */
+            width: 100%;
+            position: relative;
         }
 
         button {
             padding: 15px 25px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
+            touch-action: manipulation;
             transition: transform 0.2s ease-in-out;
-            touch-action: manipulation; /* Improves mobile response */
         }
 
         #yesBtn {
             background-color: #ff4d6d;
             color: white;
-            z-index: 20;
-            max-width: 90vw; /* Keeps it within screen width */
+            z-index: 10;
         }
 
         #noBtn {
             background-color: #ffb3c1;
             color: #590d22;
-            position: absolute; /* Allows it to jump around */
-            z-index: 30;
+            z-index: 20;
         }
     </style>
 </head>
 <body>
 
-    <div id="container">
+    <div id="question-container">
         <h1 id="question">Will you be my Valentine? ❤️</h1>
-        
-        <div id="yesContainer">
-            <button id="yesBtn">Yes</button>
-        </div>
+    </div>
 
+    <div class="button-group">
+        <button id="yesBtn">Yes</button>
         <button id="noBtn">No</button>
     </div>
 
     <script>
         const yesBtn = document.getElementById('yesBtn');
         const noBtn = document.getElementById('noBtn');
-        const question = document.getElementById('question');
         
         let yesScale = 1;
         let noClicks = 0;
 
         const messages = [
             "Wait, what?", "Are you sure?", "Think again!", 
-            "I'll be sad...", "Very sad...", "Extremely sad...", 
-            "Okay, now you're just being mean!", "Click the big one!"
+            "Last chance...", "I'll be so sad!", "Wrong button!", 
+            "Just click Yes already!", "You're stubborn! 😂"
         ];
 
         noBtn.addEventListener('click', () => {
             noClicks++;
             
-            // 1. Grow Yes Button (Max scale to prevent screen break)
-            if (yesScale < 5) {
+            // 1. Move No button to absolute positioning on first click
+            if (noClicks === 1) {
+                noBtn.style.position = 'absolute';
+            }
+
+            // 2. Grow Yes Button (caps at a safe mobile size)
+            if (yesScale < 3.5) {
                 yesScale += 0.4;
                 yesBtn.style.transform = `scale(${yesScale})`;
             }
 
-            // 2. Change No Button text
+            // 3. Change No Button text
             noBtn.innerText = messages[noClicks % messages.length];
 
-            // 3. Move No Button to a random position
-            // We subtract button width/height to keep it mostly on screen
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+            // 4. Move No Button to random coordinates
+            // Calculations keep it away from the top question area
+            const safeWidth = window.innerWidth - noBtn.offsetWidth;
+            const safeHeight = window.innerHeight - noBtn.offsetHeight;
             
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
+            const randomX = Math.random() * safeWidth;
+            // Keep Y in the bottom 60% of the screen to avoid the question
+            const randomY = (Math.random() * (safeHeight * 0.6)) + (safeHeight * 0.3);
+            
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
         });
 
         yesBtn.addEventListener('click', () => {
-            // Hide the No button when she finally says yes
             noBtn.style.display = 'none';
-            
-            document.getElementById('container').innerHTML = `
-                <h1 style="font-size: 2.5rem;">YAY! 🥰<br>See you on the 14th!</h1>
-                <p>Prepare for the best date ever.</p>
+            document.body.innerHTML = `
+                <div style="text-align: center; margin-top: 30vh;">
+                    <h1 style="font-size: 2.5rem;">YAY! 🥰</h1>
+                    <p style="font-size: 1.2rem; color: #ff4d6d;">I can't wait to see you on the 14th!</p>
+                </div>
             `;
             
             confetti({
