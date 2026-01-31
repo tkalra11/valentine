@@ -79,14 +79,13 @@
     let yesScale = 1;
     let noClicks = 0;
 
-    const messages = ["HUhhhh", "Are you sure?", "Wrong choice", "That is not how yes is spelt", "Other button", "Pweaseee"];
+    const messages = ["HUhHHhhHH", "Are you sure?", "Wrong choice", "That is not how yes is spelt", "Other button", "Pweaseee"];
 
-    // The function to handle a "Yes" success
     const handleYes = () => {
         noBtn.style.display = 'none';
         document.body.innerHTML = `
             <div style="text-align: center; margin-top: 35vh; padding: 20px;">
-                <h1 style="font-size: 2.5rem;">YAY! 🥰</h1>
+                <h1 style="font-size: 2.5rem;">I love you my forver valentine</h1>
                 <p style="font-size: 1.2rem; color: #ff4d6d;">See you on the 14th!</p>
                 <p style="font-size: 0.9rem; color: #ff4d6d; margin-top: 10px;">And on the trip (shhhh!)</p>
             </div>
@@ -97,44 +96,55 @@
     noBtn.addEventListener('click', () => {
         noClicks++;
 
-        // --- NEW FEATURE: AUTO-TRIGGER YES ---
-        // If they click No after seeing all messages, trigger Yes automatically
         if (noClicks > messages.length) {
             handleYes();
             return;
         }
 
-        // 1. Move to fixed position only after first click so it doesn't vanish immediately
         if (noClicks === 1) {
             noBtn.style.position = 'fixed';
         }
 
-        // 2. Grow Yes Button
         if (yesScale < 3.5) {
             yesScale += 0.4;
             yesBtn.style.transform = `scale(${yesScale})`;
         }
 
-        // 3. Change Text (using index - 1 because click 1 shows message 0)
         noBtn.innerText = messages[noClicks - 1] || "Okay, fine!";
 
-        // 4. Safe Jump Logic
         const padding = 50; 
         const btnWidth = noBtn.offsetWidth;
         const btnHeight = noBtn.offsetHeight;
-        const maxX = window.innerWidth - btnWidth - padding;
-        const maxY = window.innerHeight - btnHeight - padding;
-        const minX = padding;
-        const minY = window.innerHeight * 0.3; 
+        
+        // Get Yes button position to avoid it
+        const yesRect = yesBtn.getBoundingClientRect();
+        const yesCenterX = yesRect.left + yesRect.width / 2;
+        const yesCenterY = yesRect.top + yesRect.height / 2;
 
-        const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
-        const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+        let randomX, randomY;
+        let distance;
+
+        // Keep picking a spot until it's far enough from the Yes button
+        do {
+            const maxX = window.innerWidth - btnWidth - padding;
+            const maxY = window.innerHeight - btnHeight - padding;
+            const minX = padding;
+            const minY = window.innerHeight * 0.3; 
+
+            randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+            randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+
+            // Calculate distance from center of Yes button
+            const dx = randomX + (btnWidth / 2) - yesCenterX;
+            const dy = randomY + (btnHeight / 2) - yesCenterY;
+            distance = Math.sqrt(dx * dx + dy * dy);
+
+        } while (distance < 150 + (yesScale * 20)); // Buffer grows as Yes button grows
 
         noBtn.style.left = `${randomX}px`;
         noBtn.style.top = `${randomY}px`;
     });
 
-    yesBtn.addEventListener('click', handleYes);
-    </script>
+    yesBtn.addEventListener('click', handleYes);    </script>
 </body>
 </html>
